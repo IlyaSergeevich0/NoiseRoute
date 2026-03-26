@@ -1,0 +1,24 @@
+﻿<Window x:Class="NoiseRoute.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        Title="Noise Route" Width="1200" Height="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Margin="10">
+            <Button Content="Сгенерировать заново"
+                    Width="180"
+                    Margin="0,0,10,0"
+                    Click="Button_Click"/>
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding Status}"
+                       FontSize="16"/>
+        </DockPanel>
+
+        <oxy:PlotView Grid.Row="1" Model="{Binding PlotModel}"/>
+    </Grid>
+</Window>
