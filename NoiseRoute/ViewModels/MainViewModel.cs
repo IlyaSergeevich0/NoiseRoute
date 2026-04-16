@@ -20,27 +20,25 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set { field = value; OnPropertyChanged(); }
     } = "";
 
-    public MainViewModel()
-    {
-        Generate();
-    }
+    public MainViewModel() { }
 
     public void Generate()
     {
-        const int Width = 500;
-        const int Height = 500;
+        Status = "Генерация...";
 
-        var mapGen = new MapGenerator();
+        const int Width = 1316;
+        const int Height = 771;
+
         var noiseGen = new NoiseMapGenerator();
         var pathfinder = new Pathfinder();
         var plotService = new PlotService();
 
-        var map = mapGen.GenerateZones(Width, Height);
-        var noise = noiseGen.BuildNoiseMap(map, Width, Height);
+        var noise = noiseGen.BuildNoiseMap("D:\\1-Uni\\0-VKRB\\src\\NoiseMap-1.png", Width, Height);
 
         var startDirection = DirectionInt.Top;
-        var start = new PointInt2D(50, 50);
-        var goal = new PointInt2D(400, 450);
+        var start = new PointInt2D(143, 78);
+        // var start = new PointInt2D(95, 300);
+        var goal = new PointInt2D(890, 437);
 
         var path = pathfinder.FindPath(noise, startDirection, start, goal);
         PlotModel = plotService.BuildModel(noise, path, start, goal);

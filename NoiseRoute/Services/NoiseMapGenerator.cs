@@ -1,29 +1,42 @@
-﻿using NoiseRoute.Models;
+﻿using System.Drawing;
 
 namespace NoiseRoute.Services;
 
 public sealed class NoiseMapGenerator
 {
-    public double[,] BuildNoiseMap(List<MapZone> mapZones, int width, int height)
+    public double[,] BuildNoiseMap(string path, int expectedWidth, int expectedHeight)
     {
-        var noise = new double[height, width];
+        using var bmp = new Bitmap(path);
 
-        for (int y = 0; y < height; y++)
-            for (int x = 0; x < width; x++)
+        if (bmp.Width != expectedWidth || bmp.Height != expectedHeight)
+            throw new InvalidOperationException($"Unexpected size: {bmp.Width}x{bmp.Height}");
+
+        var result = new double[bmp.Height, bmp.Width];
+
+        for (int y = 0; y < expectedHeight; y++)
+        {
+            for (int x = 0; x < expectedWidth; x++)
             {
-                var maxNoise = 0.0;
+                Color c = bmp.GetPixel(x, y);
 
-                foreach (var zone in mapZones)
+                var mapY = bmp.Height - y - 1;
+
+                if (c.A == 0)
                 {
-                    var zoneNoise = zone.GetNoiseAt(x, y);
-
-                    if (maxNoise < zoneNoise)
-                        maxNoise = zoneNoise;
+                    result[mapY, x] = 0;
                 }
-
-                noise[y, x] = maxNoise;
+                else if (c.R == 255 && c.G == 0 && c.B == 0)
+                {
+                    result[mapY, x] = 40;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unexpected pixel at ({x},{y}): {c}");
+                }
             }
+        }
 
-        return noise;
+        return result;
+
     }
 }

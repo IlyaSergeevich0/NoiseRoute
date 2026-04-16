@@ -12,27 +12,12 @@ public sealed class PlotService
         int h = noiseMap.GetLength(0);
         int w = noiseMap.GetLength(1);
 
-        var model = new PlotModel { Title = "Карта шума и маршрут" };
-
-        model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0, Maximum = w - 1 });
-        model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Maximum = h - 1 });
-
-        model.Axes.Add(new LinearColorAxis {
-            Position = AxisPosition.Right,
-            Palette = OxyPalettes.Viridis(256)
-        });
-
-        var heat = new HeatMapSeries {
-            X0 = 0,
-            X1 = w - 1,
-            Y0 = 0,
-            Y1 = h - 1,
-            Interpolate = true,
-            RenderMethod = HeatMapRenderMethod.Bitmap,
-            Data = noiseMap
+        var model = new PlotModel {
+            Title = "Оптимальный маршрут"
         };
 
-        model.Series.Add(heat);
+        model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0, Maximum = w - 1, IsZoomEnabled = false });
+        model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Maximum = h - 1, IsZoomEnabled = false });
 
         if (path.Count > 0)
         {
@@ -51,7 +36,7 @@ public sealed class PlotService
         var startSeries = new ScatterSeries {
             MarkerType = MarkerType.Circle,
             MarkerFill = OxyColors.LimeGreen,
-            MarkerSize = 100,
+            MarkerSize = 2.5,
             Title = "Старт"
         };
         startSeries.Points.Add(new ScatterPoint(start.X, start.Y));
@@ -60,7 +45,7 @@ public sealed class PlotService
         var goalSeries = new ScatterSeries {
             MarkerType = MarkerType.Square,
             MarkerFill = OxyColors.OrangeRed,
-            MarkerSize = 5,
+            MarkerSize = 2.5,
             Title = "Цель"
         };
         goalSeries.Points.Add(new ScatterPoint(goal.X, goal.Y));
