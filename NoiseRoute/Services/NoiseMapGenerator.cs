@@ -1,10 +1,12 @@
-﻿using System.Drawing;
+﻿using NoiseRoute.Extensions;
+using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace NoiseRoute.Services;
 
 public sealed class NoiseMapGenerator
 {
-    public double[,] BuildNoiseMap(string path, int expectedWidth, int expectedHeight)
+    public (double[,], BitmapSource NoiseMapImage) BuildNoiseMap(string path, int expectedWidth, int expectedHeight)
     {
         using var bmp = new Bitmap(path);
 
@@ -27,7 +29,7 @@ public sealed class NoiseMapGenerator
                 }
                 else if (c.R == 255 && c.G == 0 && c.B == 0)
                 {
-                    result[mapY, x] = 40;
+                    result[mapY, x] = 120;
                 }
                 else
                 {
@@ -36,7 +38,8 @@ public sealed class NoiseMapGenerator
             }
         }
 
-        return result;
+        bmp.SetAllVisiblePixelsAlpha(128);
 
+        return (result, bmp.ToBitmapSource());
     }
 }

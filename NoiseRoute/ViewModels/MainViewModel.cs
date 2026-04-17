@@ -3,20 +3,63 @@ using NoiseRoute.Services;
 using OxyPlot;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Media.Imaging;
 
 namespace NoiseRoute.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged
-{
-    public PlotModel? PlotModel
-    {
-        get => field;
+{    
+    public int StartX {
+        get;
+        set {
+            if (field == value) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    } = 143;
+
+    public int StartY {
+        get;
+        set {
+            if (field == value) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    } = 78;
+
+    public int GoalX {
+        get;
+        set {
+            if (field == value) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    } = 890;
+
+    public int GoalY {
+        get;
+        set {
+            if (field == value) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    } = 437;
+
+    public PointInt2D StartPoint => new(StartX, StartY);
+    public PointInt2D GoalPoint => new(GoalX, GoalY);
+
+    public PlotModel? PlotModel {
+        get;
         set { field = value; OnPropertyChanged(); }
     }
 
-    public string Status
-    {
-        get => field;
+    public BitmapSource? NoiseMap {
+        get;
+        set { field = value; OnPropertyChanged(); }
+    }
+
+    public string Status {
+        get;
         set { field = value; OnPropertyChanged(); }
     } = "";
 
@@ -33,15 +76,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var pathfinder = new Pathfinder();
         var plotService = new PlotService();
 
-        var noise = noiseGen.BuildNoiseMap("D:\\1-Uni\\0-VKRB\\src\\NoiseMap-1.png", Width, Height);
+        var (noiseMap, noiseMapImage) = noiseGen.BuildNoiseMap("..\\..\\..\\NoiseMap-1.png", Width, Height);
 
         var startDirection = DirectionInt.Top;
-        var start = new PointInt2D(143, 78);
-        // var start = new PointInt2D(95, 300);
-        var goal = new PointInt2D(890, 437);
-
-        var path = pathfinder.FindPath(noise, startDirection, start, goal);
-        PlotModel = plotService.BuildModel(noise, path, start, goal);
+        var start = StartPoint;        
+        var goal = GoalPoint;
+        var path = pathfinder.FindPath(noiseMap, startDirection, start, goal);
+        NoiseMap = noiseMapImage;
+        PlotModel = plotService.BuildModel(noiseMap, path, start, goal);
 
         Status = $"Точек в пути: {path.Count}";
     }
