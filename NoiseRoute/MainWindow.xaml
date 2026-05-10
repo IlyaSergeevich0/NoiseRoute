@@ -9,11 +9,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Margin="10">
+        <DockPanel VerticalAlignment="Top">
             <StackPanel Margin="20" VerticalAlignment="Center">
                 <Button Content="Сгенерировать заново"
                     Width="180"                    
-                    Click="Button_Click"/>
+                    Click="Button_Click"
+                    IsEnabled="{Binding IsAvailable}"/>
                 <TextBlock VerticalAlignment="Center"
                     Margin="0,10,0,0"
                     Text="{Binding Status}"
@@ -21,16 +22,23 @@
             </StackPanel>
 
             <StackPanel Margin="20" VerticalAlignment="Center">
-                <TextBlock Text="Start point" Margin="0,0,0,2" />
+                <TextBlock Text="Координаты начала" Margin="0,0,0,2" />
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBox Width="100" Margin="0,0,2,0" Text="{Binding StartX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox Width="100" Text="{Binding StartY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
-                <TextBlock Text="Goal point" Margin="0,0,0,2" />
+                <TextBlock Text="Координаты цели" Margin="0,0,0,2" />
                 <StackPanel Orientation="Horizontal">
                     <TextBox Width="100" Margin="0,0,2,0" Text="{Binding GoalX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox Width="100" Text="{Binding GoalY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Margin="20" VerticalAlignment="Center">
+                <TextBlock Text="Радиус воздействия" Margin="0,0,0,2" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="153" Text="{Binding NoiseRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="20" />
                 </StackPanel>
             </StackPanel>
         </DockPanel>

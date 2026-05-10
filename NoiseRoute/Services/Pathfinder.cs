@@ -2,6 +2,14 @@
 
 namespace NoiseRoute.Services;
 
+public delegate double Heuristic(
+    in PointInt2D nextPoint,
+    in PointInt2D goal,
+    in DirectionInt currentDirection,
+    in DirectionInt nextDirection,
+    in double[,] noiseMap,
+    in int noiseRadius);
+
 public sealed class Pathfinder
 {
     private static readonly Dictionary<DirectionInt, DirectionInt[]> DirectionsMap = new() {
@@ -15,31 +23,112 @@ public sealed class Pathfinder
         [DirectionInt.TopRight] = [DirectionInt.Right, DirectionInt.TopRight, DirectionInt.Top],
     };
 
-    private static double GetDirectionCost(DirectionInt current, DirectionInt next)
+    private static double GetDistance(in PointInt2D a, in PointInt2D b)
     {
-        return current == next ? 1 : 1.5;
+        var dx = a.X - b.X;
+        var dy = a.Y - b.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 
-    public List<PointInt2D> FindPath(double[,] noiseMap, DirectionInt startDirection, PointInt2D start, PointInt2D goal)
+    private static double GetDirectionCost(in DirectionInt currentDirection, in DirectionInt nextDirection)
+    {
+        return currentDirection == nextDirection ? 10 : 50;
+    }
+
+    public static double DefaultHeuristic(
+        in PointInt2D nextPoint,
+        in PointInt2D goal,
+        in DirectionInt _,
+        in DirectionInt _1,
+        in double[,] _2,
+        in int _3)
+    {
+        return GetDistance(nextPoint, goal);
+    }
+
+    public static double NoiseSensitiveHeuristic(
+        in PointInt2D nextPoint,
+        in PointInt2D goal,
+        in DirectionInt currentDirection,
+        in DirectionInt nextDirection,
+        in double[,] noiseMap,
+        in int noiseRadius)
+    {
+        var absoluteNoiseValue = noiseMap[nextPoint.Y, nextPoint.X];
+
+        if (absoluteNoiseValue == -1)
+            return 5000;
+
+        var maximumNoiseValue = GetMaxNoiseInCircleRadius(
+            nextPoint,
+            noiseMap,
+            noiseRadius);
+
+        return GetDirectionCost(currentDirection, nextDirection) * 0.35
+            + GetDistance(nextPoint, goal) * 0.2
+            + maximumNoiseValue * 0.45;
+    }
+
+    public static double GetMaxNoiseInCircleRadius(
+        in PointInt2D center,
+        in double[,] noiseMap,
+        in int radius)
+    {
+        int width = noiseMap.GetLength(1);
+        int height = noiseMap.GetLength(0);
+
+        double maxNoise = 0;
+        int radiusSq = radius * radius;
+
+        int minX = Math.Max(0, center.X - radius);
+        int maxX = Math.Min(width - 1, center.X + radius);
+        int minY = Math.Max(0, center.Y - radius);
+        int maxY = Math.Min(height - 1, center.Y + radius);
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                int dx = x - center.X;
+                int dy = y - center.Y;
+
+                if (dx * dx + dy * dy > radiusSq)
+                    continue;
+
+                double noise = noiseMap[y, x];
+                if (noise > maxNoise)
+                    maxNoise = noise;
+            }
+        }
+
+        return maxNoise;
+    }
+
+    public static List<PointInt2D> FindPath(
+        in DirectionInt startDirection,
+        in PointInt2D start,
+        in PointInt2D goal,
+        in double[,] noiseMap,
+        in int noiseRadius,
+        in Heuristic heuristic)
     {
         int h = noiseMap.GetLength(0);
         int w = noiseMap.GetLength(1);
 
-        var open = new List<PathNode>();
-        var all = new Dictionary<(int x, int y), PathNode>();
-        var closed = new HashSet<(int x, int y)>();
+        var open = new PriorityQueue<PathNode, double>();
+        var all = new Dictionary<(int x, int y), PathNode>((int)(w * h * 0.2));
+        var closed = new HashSet<(int x, int y)>((int)(w * h * 0.2));
 
         var startNode = new PathNode(start.X, start.Y, startDirection) {
-            GCost = 0
+            Cost = 0
         };
 
-        open.Add(startNode);
+        open.Enqueue(startNode, startNode.Cost);
         all[(start.X, start.Y)] = startNode;
 
         while (open.Count > 0)
         {
-            var current = open.OrderBy(n => n.GCost).First();
-            open.Remove(current);
+            var current = open.Dequeue();
 
             if (current.X == goal.X && current.Y == goal.Y)
                 return Reconstruct(current);
@@ -51,16 +140,20 @@ public sealed class Pathfinder
                 var nx = current.X + availableDirection.DX;
                 var ny = current.Y + availableDirection.DY;
 
-                if (nx < 30 || ny < 30 || nx >= w - 50 || ny >= h - 30)
+                if (nx <= 0 || ny <= 0 || nx >= w || ny >= h)
                     continue;
 
                 if (closed.Contains((nx, ny)))
                     continue;
 
                 var newPoint = new PointInt2D(nx, ny);
-                var stepCost = GetDirectionCost(current.Direction, availableDirection) * 0.05
-                    + Heuristic(newPoint, goal) * 0.05
-                    + noiseMap[ny, nx] * 0.9;
+                var hCost = heuristic(
+                    newPoint,
+                    goal,
+                    current.Direction,
+                    availableDirection,
+                    noiseMap,
+                    noiseRadius);
 
                 if (!all.TryGetValue((nx, ny), out var neighbor))
                 {
@@ -68,28 +161,20 @@ public sealed class Pathfinder
                     all[(nx, ny)] = neighbor;
                 }
 
-                var tentativeG = current.GCost + stepCost;
+                var tentativeG = current.Cost + hCost;
 
-                if (neighbor.Parent == null || tentativeG < neighbor.GCost)
+                if (neighbor.Parent == null || tentativeG < neighbor.Cost)
                 {
                     neighbor.Parent = current;
-                    neighbor.GCost = tentativeG;
+                    neighbor.Cost = tentativeG;
                     neighbor.Direction = availableDirection;
 
-                    if (!open.Contains(neighbor))
-                        open.Add(neighbor);
+                    open.Enqueue(neighbor, neighbor.Cost);
                 }
             }
         }
 
         return [];
-    }
-
-    private static double Heuristic(PointInt2D a, PointInt2D b)
-    {
-        var dx = a.X - b.X;
-        var dy = a.Y - b.Y;
-        return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private static List<PointInt2D> Reconstruct(PathNode node)

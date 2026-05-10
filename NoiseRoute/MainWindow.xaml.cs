@@ -13,8 +13,19 @@ public partial class MainWindow : Window
         DataContext = _vm;
     }
 
-    private void Button_Click(object sender, RoutedEventArgs e)
+    private async void Button_Click(object sender, RoutedEventArgs e)
     {
-        _vm.Generate();
+        try
+        {
+            await _vm.GenerateAsync();
+        }
+        catch (Exception exception)
+        {
+            MessageBox.Show($"Ошибка: {exception.Message}",
+                            "Ошика генерации",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            MessageBoxResult.OK);
+        }
     }
 }
