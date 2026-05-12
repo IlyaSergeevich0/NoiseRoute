@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="mai.ico" />
     <None Remove="MapView-1.png" />
   </ItemGroup>
 
@@ -18,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="mai.ico" />
+    <Resource Include="MapView.png" />
     <Resource Include="MapView-1.png" />
   </ItemGroup>
 

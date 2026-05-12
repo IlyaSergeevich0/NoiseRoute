@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="http://oxyplot.org/wpf"
-        Title="Noise Route" Width="1250" Height="800">
+        Icon="/mai.ico"
+        Title="Автоматическая коррекция маршрута ЛА" Width="1250" Height="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -22,29 +23,33 @@
             </StackPanel>
 
             <StackPanel Margin="20" VerticalAlignment="Center">
-                <TextBlock Text="Координаты начала" Margin="0,0,0,2" />
+                <TextBlock Text="Координаты точки начала" Margin="0,0,0,2" />
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <TextBlock>X:</TextBlock>
                     <TextBox Width="100" Margin="0,0,2,0" Text="{Binding StartX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock>Y:</TextBlock>
                     <TextBox Width="100" Text="{Binding StartY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
-                <TextBlock Text="Координаты цели" Margin="0,0,0,2" />
+                <TextBlock Text="Координаты точки конца" Margin="0,0,0,2" />
                 <StackPanel Orientation="Horizontal">
+                    <TextBlock>X:</TextBlock>
                     <TextBox Width="100" Margin="0,0,2,0" Text="{Binding GoalX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock>Y:</TextBlock>
                     <TextBox Width="100" Text="{Binding GoalY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Margin="20" VerticalAlignment="Center">
-                <TextBlock Text="Радиус воздействия" Margin="0,0,0,2" />
+            <StackPanel Margin="20" VerticalAlignment="Top">
+                <TextBlock Text="Радиус шумового воздействия ЛА" Margin="0,0,0,2" />
                 <StackPanel Orientation="Horizontal">
-                    <TextBox Width="153" Text="{Binding NoiseRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="20" />
+                    <TextBox Width="200" Text="{Binding NoiseRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="20" />
                 </StackPanel>
             </StackPanel>
         </DockPanel>
 
         <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0">
-            <Image Source="/MapView-1.png" Stretch="Fill" Margin="38,47,20,35"/>
+            <Image Source="/MapView.png" Stretch="Fill" Margin="38,47,20,35"/>
             <Image Source="{Binding NoiseMap}" Stretch="Fill" Margin="38,47,20,35"/>
             <oxy:PlotView Model="{Binding PlotModel}" Background="Transparent"/>
         </Grid>

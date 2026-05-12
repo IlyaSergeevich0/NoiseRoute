@@ -1,22 +1,26 @@
 ﻿using NoiseRoute.Extensions;
 using System.Drawing;
+using System.IO;
 using System.Windows.Media.Imaging;
 
 namespace NoiseRoute.Services;
 
 public sealed class NoiseMapGenerator
 {
-    private static readonly Lock _lock = new();
+    private static readonly Lock Lock = new();
 
     public static (double[,], BitmapSource NoiseMapImage) BuildNoiseMap(
         string path,
         int expectedWidth,
         int expectedHeight)
     {
+        if (!File.Exists(path))
+            throw new InvalidOperationException($"Не найден файл карты шумового воздействия!");
+
         using var bmp = new Bitmap(path);
 
         if (bmp.Width != expectedWidth || bmp.Height != expectedHeight)
-            throw new InvalidOperationException($"Unexpected size: {bmp.Width}x{bmp.Height}");
+            throw new InvalidOperationException($"Неверный размер карты шумового воздействия: {bmp.Width}x{bmp.Height}");
 
         bmp.SetAllVisiblePixelsAlpha(128);
 
@@ -27,7 +31,7 @@ public sealed class NoiseMapGenerator
             {
                 Color c;
 
-                lock (_lock)
+                lock (Lock)
                 {
                     c = bmp.GetPixel(x, y);
                 }

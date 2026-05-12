@@ -9,8 +9,7 @@ namespace NoiseRoute.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged
 {
-    public int StartX
-    {
+    public int StartX {
         get;
         set {
             if (field == value) return;
@@ -19,8 +18,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 143;
 
-    public int StartY
-    {
+    public int StartY {
         get;
         set {
             if (field == value) return;
@@ -29,8 +27,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 78;
 
-    public int GoalX
-    {
+    public int GoalX {
         get;
         set {
             if (field == value) return;
@@ -39,8 +36,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 1050;
 
-    public int GoalY
-    {
+    public int GoalY {
         get;
         set {
             if (field == value) return;
@@ -49,8 +45,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 475;
 
-    public int NoiseRadius
-    {
+    public int NoiseRadius {
         get;
         set {
             if (field == value) return;
@@ -62,26 +57,22 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public PointInt2D StartPoint => new(StartX, StartY);
     public PointInt2D GoalPoint => new(GoalX, GoalY);
 
-    public PlotModel? PlotModel
-    {
+    public PlotModel? PlotModel {
         get;
         set { field = value; OnPropertyChanged(); }
     }
 
-    public BitmapSource? NoiseMap
-    {
+    public BitmapSource? NoiseMap {
         get;
         set { field = value; OnPropertyChanged(); }
     }
 
-    public string Status
-    {
+    public string Status {
         get;
         set { field = value; OnPropertyChanged(); }
     } = "";
 
-    public bool IsAvailable
-    {
+    public bool IsAvailable {
         get;
         set { field = value; OnPropertyChanged(); }
     } = true;
@@ -96,11 +87,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         const int Width = 1316;
         const int Height = 771;
 
-        var (noiseMap, noiseMapImage) = NoiseMapGenerator.BuildNoiseMap("..\\..\\..\\NoiseMap-1.png", Width, Height);
+        var (noiseMap, noiseMapImage) = NoiseMapGenerator.BuildNoiseMap("NoiseMap.png", Width, Height);
 
-        var startDirection = DirectionInt.Top;
         var start = StartPoint;
         var goal = GoalPoint;
+        var startDirection = new DirectionInt(
+            Math.Sign(goal.X - start.X),
+            Math.Sign(goal.Y - start.Y));
 
         if (!Validator.ValidatePoint("Начальная", start, noiseMap)
             || !Validator.ValidatePoint("Целевая", goal, noiseMap))
@@ -120,7 +113,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         NoiseMap = noiseMapImage;
         PlotModel = PlotService.BuildModel(noiseMap, NoiseRadius, defaultPath, optimizedPath, start, goal);
 
-        Status = $"Точек в пути\nСтандартный путь: {defaultPath.Count}\nОптимальный путь: {optimizedPath.Count}";
+        Status = $"Длины маршрутов\nСтандартный маршрут: {defaultPath.Count}\nОптимальный маршрут: {optimizedPath.Count}";
         IsAvailable = true;
     }
 

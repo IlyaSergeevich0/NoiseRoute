@@ -39,13 +39,13 @@ public sealed class PlotService
             var line = new LineSeries {
                 Color = OxyColors.Magenta,
                 StrokeThickness = 3,
-                Title = "Обычный маршрут",
+                Title = "Стандартный маршрут",
                 RenderInLegend = true
             };
             var lineZone = new LineSeries {
                 Color = OxyColors.Magenta.ChangeOpacity(0.18),
                 StrokeThickness = noiseRadius * 2,
-                Title = "Зона шумового воздействия",
+                Title = "Зона шумового воздействия стандартного маршрута",
                 RenderInLegend = true
             };
 
@@ -73,7 +73,7 @@ public sealed class PlotService
             var lineZone = new LineSeries {
                 Color = OxyColors.Aqua.ChangeOpacity(0.18),
                 StrokeThickness = noiseRadius * 2,
-                Title = "Зона шумового воздействия",
+                Title = "Зона шумового воздействия оптимального маршрута",
                 RenderInLegend = true
             };
 
@@ -91,7 +91,7 @@ public sealed class PlotService
             MarkerType = MarkerType.Diamond,
             MarkerFill = OxyColors.Yellow,
             MarkerSize = 3.5,
-            Title = "Старт",
+            Title = "Точка начала",
             RenderInLegend = true
         };
         startSeries.Points.Add(new ScatterPoint(start.X, start.Y));
@@ -101,7 +101,7 @@ public sealed class PlotService
             MarkerType = MarkerType.Diamond,
             MarkerFill = OxyColors.Orange,
             MarkerSize = 3.5,
-            Title = "Цель",
+            Title = "Точка конца",
             RenderInLegend = true
         };
         goalSeries.Points.Add(new ScatterPoint(goal.X, goal.Y));

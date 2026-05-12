@@ -1,4 +1,6 @@
 ﻿using NoiseRoute.Models;
+using System.Windows.Controls;
+using System.Windows.Media.Media3D;
 
 namespace NoiseRoute.Services;
 
@@ -11,18 +13,7 @@ public delegate double Heuristic(
     in int noiseRadius);
 
 public sealed class Pathfinder
-{
-    private static readonly Dictionary<DirectionInt, DirectionInt[]> DirectionsMap = new() {
-        [DirectionInt.Top] = [DirectionInt.TopLeft, DirectionInt.Top, DirectionInt.TopRight],
-        [DirectionInt.TopLeft] = [DirectionInt.Left, DirectionInt.TopLeft, DirectionInt.Top],
-        [DirectionInt.Left] = [DirectionInt.BottomLeft, DirectionInt.Left, DirectionInt.TopLeft],
-        [DirectionInt.BottomLeft] = [DirectionInt.Bottom, DirectionInt.BottomLeft, DirectionInt.Left],
-        [DirectionInt.Bottom] = [DirectionInt.BottomRight, DirectionInt.Bottom, DirectionInt.BottomLeft],
-        [DirectionInt.BottomRight] = [DirectionInt.Right, DirectionInt.BottomRight, DirectionInt.Bottom],
-        [DirectionInt.Right] = [DirectionInt.BottomRight, DirectionInt.Right, DirectionInt.TopRight],
-        [DirectionInt.TopRight] = [DirectionInt.Right, DirectionInt.TopRight, DirectionInt.Top],
-    };
-
+{    
     private static double GetDistance(in PointInt2D a, in PointInt2D b)
     {
         var dx = a.X - b.X;
@@ -38,12 +29,13 @@ public sealed class Pathfinder
     public static double DefaultHeuristic(
         in PointInt2D nextPoint,
         in PointInt2D goal,
-        in DirectionInt _,
-        in DirectionInt _1,
-        in double[,] _2,
-        in int _3)
+        in DirectionInt currentDirection,
+        in DirectionInt nextDirection,
+        in double[,] _,
+        in int __)
     {
-        return GetDistance(nextPoint, goal);
+        return GetDistance(nextPoint, goal) * 0.3
+            + GetDirectionCost(currentDirection, nextDirection) * 0.7;
     }
 
     public static double NoiseSensitiveHeuristic(
@@ -54,48 +46,43 @@ public sealed class Pathfinder
         in double[,] noiseMap,
         in int noiseRadius)
     {
-        var absoluteNoiseValue = noiseMap[nextPoint.Y, nextPoint.X];
-
-        if (absoluteNoiseValue == -1)
-            return 5000;
-
-        var maximumNoiseValue = GetMaxNoiseInCircleRadius(
+        var noiseValue = GetMaxNoiseInRadius(
             nextPoint,
             noiseMap,
             noiseRadius);
 
         return GetDirectionCost(currentDirection, nextDirection) * 0.35
-            + GetDistance(nextPoint, goal) * 0.2
-            + maximumNoiseValue * 0.45;
+            + GetDistance(nextPoint, goal) * 0.05
+            + noiseValue * 0.6;
     }
 
-    public static double GetMaxNoiseInCircleRadius(
+    private static double GetMaxNoiseInRadius(
         in PointInt2D center,
         in double[,] noiseMap,
         in int radius)
     {
-        int width = noiseMap.GetLength(1);
-        int height = noiseMap.GetLength(0);
+        var width = noiseMap.GetLength(1);
+        var height = noiseMap.GetLength(0);
 
-        double maxNoise = 0;
-        int radiusSq = radius * radius;
+        var maxNoise = 0.0;
+        var radiusSq = radius * radius;
 
-        int minX = Math.Max(0, center.X - radius);
-        int maxX = Math.Min(width - 1, center.X + radius);
-        int minY = Math.Max(0, center.Y - radius);
-        int maxY = Math.Min(height - 1, center.Y + radius);
+        var minX = Math.Max(0, center.X - radius);
+        var maxX = Math.Min(width - 1, center.X + radius);
+        var minY = Math.Max(0, center.Y - radius);
+        var maxY = Math.Min(height - 1, center.Y + radius);
 
-        for (int y = minY; y <= maxY; y++)
+        for (var y = minY; y <= maxY; y++)
         {
-            for (int x = minX; x <= maxX; x++)
+            for (var x = minX; x <= maxX; x++)
             {
-                int dx = x - center.X;
-                int dy = y - center.Y;
+                var dx = x - center.X;
+                var dy = y - center.Y;
 
                 if (dx * dx + dy * dy > radiusSq)
                     continue;
 
-                double noise = noiseMap[y, x];
+                var noise = noiseMap[y, x];
                 if (noise > maxNoise)
                     maxNoise = noise;
             }
@@ -111,66 +98,86 @@ public sealed class Pathfinder
         in double[,] noiseMap,
         in int noiseRadius,
         in Heuristic heuristic)
-    {
-        int h = noiseMap.GetLength(0);
-        int w = noiseMap.GetLength(1);
-
-        var open = new PriorityQueue<PathNode, double>();
-        var all = new Dictionary<(int x, int y), PathNode>((int)(w * h * 0.2));
-        var closed = new HashSet<(int x, int y)>((int)(w * h * 0.2));
-
-        var startNode = new PathNode(start.X, start.Y, startDirection) {
-            Cost = 0
+    {        
+        var directionsMap = new Dictionary<DirectionInt, DirectionInt[]>() {
+            [DirectionInt.Top] = [DirectionInt.TopLeft, DirectionInt.Top, DirectionInt.TopRight],
+            [DirectionInt.TopLeft] = [DirectionInt.Left, DirectionInt.TopLeft, DirectionInt.Top],
+            [DirectionInt.Left] = [DirectionInt.BottomLeft, DirectionInt.Left, DirectionInt.TopLeft],
+            [DirectionInt.BottomLeft] = [DirectionInt.Bottom, DirectionInt.BottomLeft, DirectionInt.Left],
+            [DirectionInt.Bottom] = [DirectionInt.BottomRight, DirectionInt.Bottom, DirectionInt.BottomLeft],
+            [DirectionInt.BottomRight] = [DirectionInt.Right, DirectionInt.BottomRight, DirectionInt.Bottom],
+            [DirectionInt.Right] = [DirectionInt.BottomRight, DirectionInt.Right, DirectionInt.TopRight],
+            [DirectionInt.TopRight] = [DirectionInt.Right, DirectionInt.TopRight, DirectionInt.Top],
         };
 
-        open.Enqueue(startNode, startNode.Cost);
-        all[(start.X, start.Y)] = startNode;
+        var height = noiseMap.GetLength(0);
+        var width = noiseMap.GetLength(1);
+
+        var open = new PriorityQueue<PathNode, double>();
+        var closed = new bool[height, width];
+        var nodes = new PathNode?[height, width];
+
+        var startNode = new PathNode {
+            X = start.X,
+            Y = start.Y,
+            Direction = startDirection,
+            Cost = 0,
+            Heuristic = heuristic(start, goal, startDirection, startDirection, noiseMap, noiseRadius)
+        };
+
+        nodes[start.Y, start.X] = startNode;
+        open.Enqueue(startNode, startNode.TotalCost);
 
         while (open.Count > 0)
         {
             var current = open.Dequeue();
 
+            if (closed[current.Y, current.X])
+                continue;
+
             if (current.X == goal.X && current.Y == goal.Y)
                 return Reconstruct(current);
 
-            closed.Add((current.X, current.Y));
-
-            foreach (var availableDirection in DirectionsMap[current.Direction])
+            closed[current.Y, current.X] = true;
+            
+            foreach (var availableDirection in directionsMap[current.Direction])
             {
                 var nx = current.X + availableDirection.DX;
                 var ny = current.Y + availableDirection.DY;
 
-                if (nx <= 0 || ny <= 0 || nx >= w || ny >= h)
+                if (nx <= 0 || ny <= 0 || nx >= width || ny >= height)
                     continue;
 
-                if (closed.Contains((nx, ny)))
+                if (closed[ny, nx])
+                    continue;
+
+                if (noiseMap[ny, nx] == -1)
                     continue;
 
                 var newPoint = new PointInt2D(nx, ny);
-                var hCost = heuristic(
-                    newPoint,
-                    goal,
-                    current.Direction,
-                    availableDirection,
-                    noiseMap,
-                    noiseRadius);
+                var currentHeuristic = heuristic(newPoint, goal, current.Direction, availableDirection, noiseMap, noiseRadius);
+                var tentativeCost = current.Cost + currentHeuristic;
+                var neighbor = nodes[ny, nx];
 
-                if (!all.TryGetValue((nx, ny), out var neighbor))
+                if (neighbor is null)
                 {
-                    neighbor = new PathNode(nx, ny, availableDirection);
-                    all[(nx, ny)] = neighbor;
+                    neighbor = new PathNode { 
+                        X = nx, 
+                        Y = ny,
+                        Cost = double.PositiveInfinity
+                    };
+                    nodes[ny, nx] = neighbor;
                 }
 
-                var tentativeG = current.Cost + hCost;
+                if (tentativeCost >= neighbor.Cost)
+                    continue;
 
-                if (neighbor.Parent == null || tentativeG < neighbor.Cost)
-                {
-                    neighbor.Parent = current;
-                    neighbor.Cost = tentativeG;
-                    neighbor.Direction = availableDirection;
+                neighbor.Parent = current;
+                neighbor.Cost = tentativeCost;
+                neighbor.Direction = availableDirection;
+                neighbor.Heuristic = currentHeuristic;
 
-                    open.Enqueue(neighbor, neighbor.Cost);
-                }
+                open.Enqueue(neighbor, neighbor.TotalCost);
             }
         }
 

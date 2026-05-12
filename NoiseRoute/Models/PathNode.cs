@@ -1,15 +1,13 @@
 ﻿namespace NoiseRoute.Models;
 
-public sealed class PathNode(int x, int y, DirectionInt direction)
+public sealed class PathNode
 {
-    public int X { get; } = x;
-    public int Y { get; } = y;
-    public double Cost { get; set; }
-    public DirectionInt Direction { get; set; } = direction;
-    public PathNode? Parent { get; set; }
+    public double TotalCost => Cost + Heuristic;
 
-    public bool SameAs(PathNode other)
-    {
-        return X == other.X && Y == other.Y;
-    }
+    public int X { get; init; }
+    public int Y { get; init; }
+    public DirectionInt Direction { get; set; }
+    public double Cost { get; set; }
+    public double Heuristic { get; set; }
+    public PathNode? Parent { get; set; }
 }
