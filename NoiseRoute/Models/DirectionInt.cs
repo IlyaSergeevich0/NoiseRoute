@@ -3,7 +3,7 @@
 public readonly struct DirectionInt(int dx, int dy)
 {
     public readonly int DX = dx;
-    public readonly int DY = dy;    
+    public readonly int DY = dy;
 
     public static readonly DirectionInt Top = new(0, 1);
     public static readonly DirectionInt TopLeft = new(-1, 1);

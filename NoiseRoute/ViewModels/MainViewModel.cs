@@ -9,7 +9,8 @@ namespace NoiseRoute.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged
 {
-    public int StartX {
+    public int StartX
+    {
         get;
         set {
             if (field == value) return;
@@ -18,7 +19,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 143;
 
-    public int StartY {
+    public int StartY
+    {
         get;
         set {
             if (field == value) return;
@@ -27,7 +29,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 78;
 
-    public int GoalX {
+    public int GoalX
+    {
         get;
         set {
             if (field == value) return;
@@ -36,7 +39,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 1050;
 
-    public int GoalY {
+    public int GoalY
+    {
         get;
         set {
             if (field == value) return;
@@ -45,7 +49,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     } = 475;
 
-    public int NoiseRadius {
+    public int NoiseRadius
+    {
         get;
         set {
             if (field == value) return;
@@ -57,22 +62,26 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public PointInt2D StartPoint => new(StartX, StartY);
     public PointInt2D GoalPoint => new(GoalX, GoalY);
 
-    public PlotModel? PlotModel {
+    public PlotModel? PlotModel
+    {
         get;
         set { field = value; OnPropertyChanged(); }
     }
 
-    public BitmapSource? NoiseMap {
+    public BitmapSource? NoiseMap
+    {
         get;
         set { field = value; OnPropertyChanged(); }
     }
 
-    public string Status {
+    public string Status
+    {
         get;
         set { field = value; OnPropertyChanged(); }
     } = "";
 
-    public bool IsAvailable {
+    public bool IsAvailable
+    {
         get;
         set { field = value; OnPropertyChanged(); }
     } = true;

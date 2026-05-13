@@ -1,6 +1,4 @@
 ﻿using NoiseRoute.Models;
-using System.Windows.Controls;
-using System.Windows.Media.Media3D;
 
 namespace NoiseRoute.Services;
 
@@ -13,7 +11,7 @@ public delegate double Heuristic(
     in int noiseRadius);
 
 public sealed class Pathfinder
-{    
+{
     private static double GetDistance(in PointInt2D a, in PointInt2D b)
     {
         var dx = a.X - b.X;
@@ -98,7 +96,7 @@ public sealed class Pathfinder
         in double[,] noiseMap,
         in int noiseRadius,
         in Heuristic heuristic)
-    {        
+    {
         var directionsMap = new Dictionary<DirectionInt, DirectionInt[]>() {
             [DirectionInt.Top] = [DirectionInt.TopLeft, DirectionInt.Top, DirectionInt.TopRight],
             [DirectionInt.TopLeft] = [DirectionInt.Left, DirectionInt.TopLeft, DirectionInt.Top],
@@ -139,7 +137,7 @@ public sealed class Pathfinder
                 return Reconstruct(current);
 
             closed[current.Y, current.X] = true;
-            
+
             foreach (var availableDirection in directionsMap[current.Direction])
             {
                 var nx = current.X + availableDirection.DX;
@@ -161,8 +159,8 @@ public sealed class Pathfinder
 
                 if (neighbor is null)
                 {
-                    neighbor = new PathNode { 
-                        X = nx, 
+                    neighbor = new PathNode {
+                        X = nx,
                         Y = ny,
                         Cost = double.PositiveInfinity
                     };
